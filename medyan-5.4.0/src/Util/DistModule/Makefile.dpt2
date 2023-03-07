@@ -1,0 +1,30 @@
+# https://stackoverflow.com/questions/2481269/how-to-make-a-simple-c-makefile
+
+CC=gcc
+CXX=g++
+RM=rm -f
+CPPFLAGS= -I./ -I./include -I./umesimd -std=c++14 -O3 -ffast-math -march=native # -Xpreprocessor -fopenmp # -mavx2  
+LDFLAGS= # -lomp
+LDLIBS=-static-libstdc++ -pthread -L./umesimd
+
+SRCS=dist_avx_par.cpp  dist_bench.cpp  dist_example.cpp  dist_main.cpp  dist_mod_vars.cpp  dist_test.cpp 
+OBJS=$(subst .cpp,.o,$(SRCS))
+
+all: comp_dist
+
+comp_dist: $(OBJS)
+	$(CXX) $(CPPFLAGS) $(LDFLAGS) -o comp_dist $(OBJS) $(LDLIBS) 
+
+depend: .depend
+
+.depend: $(SRCS)
+	$(RM) ./.depend
+	$(CXX) $(CPPFLAGS) -MM $^>>./.depend;
+
+clean:
+	$(RM) $(OBJS)
+
+distclean: clean
+	$(RM) *~ .depend
+
+include .depend

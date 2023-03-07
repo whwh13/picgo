@@ -1,0 +1,79 @@
+
+
+\documentclass[11pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   		% ... or a4paper or a5paper or ... 
+%\geometry{landscape}                		% Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}				% Use pdf, png, jpg, or eps with pdflatex; use eps in DVI mode
+\usepackage{listings}			         % For showing code			
+								% TeX will automatically convert eps --> pdf in pdflatex	
+								
+\usepackage{multirow}	
+\usepackage{amssymb}
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\title{Optimization documentation for MEDYAN \textbf{v4.0}}
+\author{Papoian Lab, University of Maryland}
+\date{}							% Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+%\section{}
+%\subsection{}MEDYAN
+
+\tableofcontents
+\newpage
+
+\section{Performance updates in Medyan4.0}
+ Medyan4.0 is optimized to carry out cache-friendly calculations in \textbf{conjugate gradient energy minimization} and \textbf{pair-wise distance search}. Pair-wise distance calculations can be accelerated further using SIMD based vectorized search. Please refer to Installation guide for more information. \\
+ \indent The SIMD based distance search algorithm along with other optimizations described above accelerates code execution as shown below.
+ 
+ \begin{table} [!ht]
+ \centering
+ \begin{tabular}{|L{2.5cm}|L{2.5cm}|L{2.5cm}|L{3cm}|L{3cm}|}  
+  \hline
+ \multicolumn{5}{c}{ \textbf{[Actin]=20$\mu M$, $\alpha:A=$0.01, M:A 0.05}}\\
+ \hline
+  \vtop{\hbox{\strut \textbf{Volume}} \hbox{\strut $\mu m^3$}} & \textbf{\# actin monomers} & \textbf{\# actin segments} & \vtop{\hbox{\strut \textbf{MEDYAN4.0}}\hbox{\strut d-days or h-hours}} & \vtop{\hbox{\strut \textbf{MEDYAN3.2}}\hbox{\strut d-days or h-hours}} \\
+   \hline
+  1&12000&300&2.5h&12.5h\\
+   \hline
+  8&9600&2400&1.5d&8d\\
+   \hline
+  27&3.2$\times 10^5$&8000&5.5d&40d\\
+   \hline
+  125&1.5$\times 10^6$&38000&26.75d&360d\\
+   \hline
+
+   \hline
+ \end{tabular}
+ \caption{Estimated time taken by single core on a single CPU for 1000s of simulation time}
+ \end{table}
+
+ \begin{table} [!ht]
+  \centering
+  \begin{tabular}{|L{2.5cm}|L{2.5cm}|L{2.5cm}|L{3cm}|L{3cm}|}
+   \hline
+  \multicolumn{5}{c}{ \textbf{[Actin]=50$\mu M$, $\alpha:A=$0.01, M:A 0.05}}\\
+  \hline
+   \vtop{\hbox{\strut \textbf{Volume}} \hbox{\strut $\mu m^3$}} & \textbf{\# actin monomers} & \textbf{\# actin segments} & \vtop{\hbox{\strut \textbf{MEDYAN4.0}}\hbox{\strut d-days or h-hours}} & \vtop{\hbox{\strut \textbf{MEDYAN3.2}}\hbox{\strut d-days or h-hours}} \\
+    \hline
+   1&30000&750&22h&3.5d\\
+    \hline
+   8&2.4$\times 10^5$&6000&12.25d&58d\\
+    \hline
+   27&8.1$\times 10^5$&20000&35d&229.5\\
+    \hline
+   125&3.8$\times 10^6$&94000&220d&2395d\\
+    \hline
+   
+    \hline
+  \end{tabular}
+  \caption{Estimated time taken by single core on a single CPU for 1000s of simulation time}
+  \end{table}
+  
+\end{document}  

@@ -1,0 +1,43 @@
+# Sync documentations to medyan-public.
+name: public
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  publish-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout medyan.
+      uses: actions/checkout@v3
+      with:
+        path: medyan
+
+    - name: Checkout medyan-public.
+      uses: actions/checkout@v3
+      with:
+        repository: medyan-dev/medyan-public
+        path: medyan-public
+
+    - name: Sync files.
+      run: |
+        rm -rf medyan-public/docs
+        cp -r medyan/docs medyan-public/docs
+        rm -rf medyan-public/examples
+        cp -r medyan/examples medyan-public/examples
+
+        rm -f medyan-public/CHANGELOG.md
+        cp medyan/CHANGELOG.md medyan-public/CHANGELOG.md
+        rm -f medyan-public/license.txt
+        cp medyan/license.txt medyan-public/license.txt
+        rm -f medyan-public/README.md
+        cp medyan/README.md medyan-public/README.md
+
+    - name: Create PR.
+      uses: peter-evans/create-pull-request@v3
+      with:
+        path: medyan-public
+        token: ${{ secrets.MEDYAN_BOT_PAT_REPO }}

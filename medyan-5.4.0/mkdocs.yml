@@ -1,0 +1,15 @@
+site_name: MEDYAN
+site_description: Mechanochemical Dynamics of Active Networks
+edit_uri: src/master/docs/
+theme: windmill
+
+nav:
+- Home: 'index.md'
+- Manual:
+    - Installation: "manual/installation.md"
+    - Input files: "manual/input-files.md"
+    - Output files: "manual/output-files.md"
+    - Predefined Macro: "manual/predefined-macro.md"
+- Development:
+    - Reaction: "development/reaction.md"
+    - Units: "development/units.md"

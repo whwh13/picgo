@@ -1,0 +1,77 @@
+name: build
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  build-ubuntu:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: prepare dependencies
+      run: |
+        # required by glfw3 library
+        sudo apt-get update && sudo apt install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
+        # Use avx2 (default avx512 causes trouble in UMEsimd)
+        sed -i 's/-mtune=native -march=native/-mavx2 -mno-avx512f/g' CMakeLists.txt
+        # add --no-as-needed to correctly link pthread
+        sed -i -e '/    target_link_libraries(medyan PRIVATE Threads::Threads)/a\' -e '    target_link_options(medyan BEFORE PRIVATE "-Wl,--no-as-needed")' CMakeLists.txt
+        ./conf.sh
+    - name: build with make
+      run: |
+        cd build
+        make VERBOSE=1
+    - name: run tests
+      run: |
+        ./build/medyan test
+
+  # build-macos:
+
+  #   runs-on: macos-latest
+
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: prepare dependencies
+  #     run: |
+  #       brew install pkg-config
+  #       # Use avx
+  #       # (avx2 is not available on github MacOS environment (Intel(R) Xeon(R) CPU E5-1650 v2 @ 3.50GHz as of the time of commit))
+  #       sed -i '' -e 's/-mtune=native -march=native/-mavx/g' CMakeLists.txt
+  #       ./conf.sh
+  #   - name: build with make
+  #     run: |
+  #       cd build
+  #       make VERBOSE=1
+  #   - name: run tests
+  #     run: |
+  #       ./build/medyan test
+
+  build-windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: prepare dependencies
+      run: |
+        .\conf.ps1
+    - name: build with MSBuild
+      working-directory: ${{ github.workspace }}
+      run: |
+        cd build
+        # Set up chocolatey profile so that refreshenv is an ps alias
+        # $env:ChocolateyInstall = Convert-Path "$((Get-Command choco).Path)\..\.."   
+        # Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+        # refreshenv
+        # Build solution
+        & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe" .\MEDYAN.sln /property:Configuration=Release /property:Platform=x64
+    - name: run tests
+      run: |
+        .\build\Release\medyan.exe test

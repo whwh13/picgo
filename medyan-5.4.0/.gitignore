@@ -1,0 +1,34 @@
+#Mac OS X
+*.DS_Store
+
+# Text editors and IDEs
+# Xcode
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcuserstate
+project.xcworkspace/
+xcuserdata/
+*.xcscheme
+# VS Code
+.vscode/
+
+# Generated files
+## LaTeX
+docsdev/**/*.aux
+docsdev/**/*.log
+docsdev/**/*.synctex.gz
+docsdev/**/*.toc
+## C++
+build/
+src/MEDYAN
+## Python
+*.pyc
+
+# Backup files
+*~.nib
+
+# Traj
+*.traj
+!analysis/**/*.traj

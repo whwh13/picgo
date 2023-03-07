@@ -1,0 +1,100 @@
+\documentclass[11pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   		% ... or a4paper or a5paper or ... 
+%\geometry{landscape}                		% Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}				% Use pdf, png, jpg, or eps with pdflatex; use eps in DVI mode
+								% TeX will automatically convert eps --> pdf in pdflatex		
+\usepackage{enumitem}
+\usepackage{csquotes}
+\usepackage{amssymb}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\setcounter{secnumdepth}{5}
+\setcounter{tocdepth}{5}
+\def\Z{\vphantom{\parbox[c]{1cm}{\Huge Something Long}}}
+
+\title{Note on Using Dissipation Tracking in MEDYAN}
+\author{Papoian Lab, University of Maryland}
+\date{}							% Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+
+To use the dissipation tracking feature to produce thermodynamically consistent results, some care needs to be taken when parameterizing the system.  To understand how this parameterization has been done in the past, users are encouraged to read the papers ``Quantifying Dissipation in Actomyosin Networks" by Carlos Floyd, Garegin Papoian, and Christopher Jarzynski in \textit{Interface Focus} (\url{https://doi.org/10.1098/rsfs.2018.0078}), and the Supplementary Material within, as well as ``A Discrete Approximation to Gibbs Free Energy of Chemical Reactions is Needed for Accurately Calculating Entropy Production in Mesoscopic Simulations" by the same authors (\url{https://arxiv.org/abs/1901.10520v1}).  This parameterization process consists mainly of choosing values for $\Delta G^0$ to use in the input file.  This process consists first of determining a good value based on the literature expressions, and next converting it into a form that will produce unbiased results.  
+
+
+For a reaction of the general form 
+\begin{equation}
+\label{eq6}
+\nu_1 X_1 + \nu_2 X_2 + \ldots \rightleftharpoons \upsilon_1 Y_1 + \upsilon_2 Y_2 + \ldots 
+\end{equation}
+we define $X_i$ as the reactant species, $Y_i$ as the product species, and $\nu_i$ and $\upsilon_j$ as their stoichiometric coefficients, and where the rate constant is $k_+$ to the right and $k_-$ to the left.  The ``stoichiometric difference" is defined as
+\begin{equation}
+\label{eq7}
+\sigma = \sum_{j \in P} \upsilon_j - \sum_{i \in R} \nu_i 
+\end{equation} 
+where $P$ is the set of products and $R$ is the set of reactants.
+We further define the conversion factor between the copy number of species $i$, $N_i$, and its concentration $C_i$,
+\begin{equation}
+\label{eq8}
+\Theta = N_\text{Av} V
+\end{equation}
+where $N_\text{Av}$ is Avogadro's number, $V$ is the volume of the compartment where the reaction occurs, and we have $N_i = C_i \Theta$.  
+The formula for change in Gibbs free energy during this reaction used in MEDYAN is
+\begin{equation}
+\Delta G_{} = \Delta G^0 - \sigma k_B T  \log{\Theta} - \sigma k_B T + k_B T \log{\widetilde{Q}} 
+\label{eqa}
+\end{equation}
+where 
+\begin{equation}
+\widetilde{Q} = \prod_{i \in R} \frac{(N_i - \nu_i)^{N_i-\nu_i}}{N_i^{N_i}}  \prod_{j \in P} \frac{(N_j + \upsilon_j)^{N_j+\upsilon_j}}{N_j^{N_j}}.
+\label{eqb}
+\end{equation}
+We refer the reader to the ``A Discrete Approximation is Needed..." paper mentioned above for a derivation of this expression.
+
+In MEDYAN the last term in Equation \ref{eqa} is computed based on the instantaneous compartment concentrations of the reaction species when the reaction occurs, and the first three terms on the right hand side are provided as a constant user input called \texttt{DELGZERO}:
+\begin{equation}
+\label{eqc}
+\texttt{DELGZERO} = \Delta G^0 - \sigma k_B T  \log{\Theta} - \sigma k_B T.
+\end{equation}
+So, once the user determines $\Delta G^0$ based on their parameterization (which is discussed next), this value should be used to set the \texttt{DELGZERO} parameter in chemistry input value based on the value of $\sigma$ and $\Theta$ for the reaction.  The units of this number in the input file should be $k_B T$.  
+
+For a reversible reaction, for which the forward and reverse reactions are included in the chemistry input file, \texttt{DELGZERO} can be obtained as 
+\begin{equation}
+\texttt{DELGZERO} = k_B T \log{\frac{a_-}{a_+}} - \sigma k_B T
+\end{equation}
+where $a_-$ and $a_+$ are the reaction propensities in the reverse and forward direction respectively.  For a reaction with $n$ reactants (i.e. a $n$-order reaction), the propensity is given as $a = k/\Theta^{n-1}$, where $k$ is the unit-full rate constant.  Thus
+\begin{equation}
+\Delta G^0 - \sigma k_B T \log{\Theta} = k_B T \log{\frac{k_-}{k_+}}  - \sigma k_B T \log{\Theta} = k_B T \log{\frac{a_-}{a_+}}.
+\end{equation}
+So in practice to determine \texttt{DELGZERO} in units of $k_B T$ for reversible reactions, take the log of the ratio of the forward and reverse propensities and subtract $\sigma$, the difference in the number of products and reactants.  
+
+  
+
+For balanced reactions, in which the number of products is equal to the number of reactants, $\sigma = 0$ and $\texttt{DELGZERO} = \Delta G^0$.  Polymerization and linker binding reactions are taken to have $\sigma = -1$, whereas depolymerization and unbinding reactions have $\sigma = 1$.  For reactions in which ATP, ADP, or Pi are implicitly involved as products or reactants (for instance a nucleotide exchange reaction converting ADP-bound G-actin to ATP-bound G-actin), the assumed constant concentrations of these molecules should be incorporated into the value of \texttt{DELGZERO}.  For greater detail on this aspect, please consult the Supplementary Material in ``Quantifying Dissipation in Actomyosin Networks."  
+
+To determine values of $\Delta G^0$ for reversible reactions, the formula
+\begin{equation}
+\Delta G^0 = k_B T \ln K_\text{eq} = k_B T \ln \frac{k_-}{k_+}.
+\label{eqd}
+\end{equation} 
+may be used.  For effectively irreversible reactions (i.e. when is $k_-$ too small to be measured), then $\Delta G^0$ is often reported directly.  When no value for $\Delta G^0$ can be found in the literature, then indirect methods of determining it for a certain reaction may be used.  The method entails constructing closed loops of reactions such that traversing the loops results in no net change in the copy numbers of any species.  For such a loop the net $\Delta G^0 = 0$, which provides a constraint on the unknown value in terms of the known ones.  An example of this method is illustrated in the Supplementary Material of ``Quantifying Dissipation in Actomyosin Networks."  
+
+ 
+An additional issue to be aware of is that the myosin motor step size for actomyosin networks should be set as close to physiological value ($\sim$ 6 $nm$ for NMIIA) as possible to prevent the motors from always taking large steps and increasing their stretching energy more than the chemical energy of the ATP molecules they consumed.  The binding sites per cylinder which determines the motor step size is simultaneously constrained by the cross-linker binding distance ($\sim$30 $nm$ for $\alpha$-actinin).  This need motivates the \texttt{LINKERBINDINGSKIP} feature, which allows the motors and cross-linkers to have different a number of binding sites per cylinder.    
+
+  
+		
+\end{document}

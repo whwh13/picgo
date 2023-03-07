@@ -1,0 +1,146 @@
+\documentclass[main.tex]{subfiles}
+
+\begin{document}
+
+We use power law potential between the filament tip and the point on the facet with $n=4$ to get a steep enough, while analytically integrable function of interaction, similar to the volume exclusion interaction of cylinders in MEDYAN. The integration can be done as follows. Suppose we have a triangle facet $f$, with 3 vertices $v_0, v_1, v_2$ at coordinate $\bm{x}_0, \bm{x}_1, \bm{x}_2$. Let $\bm{r}_{01} = \bm{x}_1 - \bm{x}_0$ and $\bm{r}_{12} = \bm{x}_2 - \bm{x}_1$, any point $q$ on the vertex has the coordinate $\bm{x}_q = \bm{x}_0 + \alpha\bm{r}_{01} + \alpha\beta\bm{r}_{12}$, $\alpha\in[0,1], \beta\in[0,1]$, as displayed in figure \ref{fig:FacetAreaElement}. And suppose we have a filament tip $p$ at position $\bm{x}_p$, and let $\bm{r}_{p0} = \bm{x}_0 - \bm{x}_p$, then the distance between $p$ and $q$ is
+\begin{equation}
+d = \| \alpha\bm{r}_{01} + \alpha\beta\bm{r}_{12} + \bm{r}_{p0} \|
+\end{equation}
+The interaction energy can be written as
+\begin{equation}
+V_\text{vol}(f, p) = k_\text{vol} \iint_f \mathrm{d}A \frac1{d^4}
+\label{eq:TriangleBeadVolumeExclusionIntegral}
+\end{equation}
+where $k_\text{vol}$ is the strength of the interaction. The area element when $\alpha$ and $\beta$ change can be given as
+\begin{equation}
+\begin{aligned}
+\mathrm{d}A &= \| \mathrm{d}\alpha\ \left(\bm{r}_{01} + \beta\bm{r}_{12}\right) \times \mathrm{d}\beta\ \alpha\bm{r}_{12} \|\\
+&= \| \mathrm{d}\alpha\ \bm{r}_{01} \times \mathrm{d}\beta\ \alpha\bm{r}_{12} \|\\
+&= \alpha\ \mathrm{d}\alpha\ \mathrm{d}\beta\ \| \bm{r}_{01} \times \bm{r}_{12} \|
+\end{aligned}
+\end{equation}
+where $\| \bm{r}_{01} \times \bm{r}_{12} \|$ is simply twice the area of the triangle.
+
+% The diagram for the integral
+\begin{figure}[!htbp]
+\centering
+\begin{tikzpicture}[scale=2]
+
+\coordinate [label=above:$\bm{x}_0$] (v0) at (1,2);
+\coordinate [label=left:$\bm{x}_1$] (v1) at (0,0);
+\coordinate [label=right:$\bm{x}_2$] (v2) at (3,0);
+
+\newcommand{\alphaValue}{0.5}
+\newcommand{\betaValue}{0.4}
+\newcommand{\dalphaValue}{0.1}
+\newcommand{\dbetaValue}{0.1}
+
+\draw [thick, blue] (v2) -- (v0);
+\draw [->, thick, blue, name path=r01] (v0) -- node [left] {$\bm{r}_{01}$} (v1);
+\draw [->, thick, blue, name path=r12] (v1) -- node [below] {$\bm{r}_{12}$} (v2);
+
+\coordinate (beta_r12) at ($(v1)!\betaValue!(v2)$);
+\coordinate (alpha_r01) at ($(v0)!\alphaValue!(v1)$);
+\coordinate [label=above left:$q$] (alpha_beta_r12) at ($(v0)!\alphaValue!(beta_r12)$);
+
+\draw [black, fill=black] (alpha_beta_r12) circle (1.5pt);
+\draw [->, line width=0.5, black] (v0) -- node [left] {$\alpha\bm{r}_{01}$} (alpha_r01);
+\draw [->, line width=0.5, black] (v1) -- node [below] {$\beta\bm{r}_{12}$} (beta_r12);
+\draw [line width=0.5, black] (v0) -- (beta_r12);
+\draw [->, line width=0.5, black] (alpha_r01) -- node [below] {$\alpha\beta\bm{r}_{12}$} (alpha_beta_r12);
+
+\coordinate (alpha_dalpha_r01) at ($(v0)!\alphaValue+\dalphaValue!(v1)$);
+\coordinate (beta_dbeta_r12) at ($(v1)!\betaValue+\dbetaValue!(v2)$);
+\coordinate (alpha_beta_dbeta_r12) at ($(v0)!\alphaValue!(beta_dbeta_r12)$);
+\coordinate (alpha_dalpha_beta_r12) at ($(v0)!\alphaValue+\dalphaValue!(beta_r12)$);
+\coordinate (alpha_dalpha_beta_dbeta_r12) at ($(v0)!\alphaValue+\dalphaValue!(beta_dbeta_r12)$);
+
+\draw [->, line width=0.3, cyan] (beta_r12) -- node [above] {$\mathrm{d}\beta\bm{r}_{12}$} (beta_dbeta_r12);
+\draw [->, line width=0.3, cyan] (alpha_r01) -- node [left] {$\mathrm{d}\alpha\bm{r}_{01}$} (alpha_dalpha_r01);
+\draw [line width=0.3, cyan] (v0) -- (beta_dbeta_r12);
+\draw [line width=0.3, cyan] (alpha_dalpha_r01) -- (alpha_dalpha_beta_r12);
+
+\draw [cyan, fill=cyan, fill opacity=0.3] (alpha_beta_r12) -- (alpha_dalpha_beta_r12) -- (alpha_dalpha_beta_dbeta_r12) -- node [right, text opacity=1] {$\mathrm{d}A$} (alpha_beta_dbeta_r12) -- (alpha_beta_r12);
+
+
+\end{tikzpicture}
+\caption{The area element on a triangle facet.}
+\label{fig:FacetAreaElement}
+\end{figure}
+
+Now that equation (\ref{eq:TriangleBeadVolumeExclusionIntegral}) can be done analytically as follows.
+\begin{equation}
+\begin{aligned}
+V_\text{vol} &= k_\text{vol} \iint_f \mathrm{d}A \frac1{d^4}\\
+&= k_\text{vol} \| \bm{r}_{01} \times \bm{r}_{12} \| \underbrace{\int_0^1 \mathrm{d}\alpha \int_0^1 \mathrm{d}\beta \ \alpha / \| \alpha\bm{r}_{01} + \alpha\beta\bm{r}_{12} + \bm{r}_{p0} \|^4}_I\\
+\end{aligned}
+\label{eq:TriangleBeadVolumeExclusionIntegralExpanded}
+\end{equation}
+Let
+\begin{equation}
+\begin{aligned}
+A &= \|\bm{r}_{01}\|^2\\
+B &= \|\bm{r}_{12}\|^2\\
+C &= \|\bm{r}_{p0}\|^2\\
+D &= 2\bm{r}_{01}\cdot\bm{r}_{p0}\\
+E &= 2\bm{r}_{12}\cdot\bm{r}_{p0}\\
+F &= 2\bm{r}_{01}\cdot\bm{r}_{12}
+\end{aligned}
+\end{equation}
+Then with the help of Wolfram Alpha,
+\begin{equation}
+\begin{aligned}
+I &= \int_0^1 \mathrm{d}\alpha \int_0^1 \mathrm{d}\beta \ \alpha / \left( A\alpha^2 + B\alpha^2\beta^2 + C + D\alpha + E\alpha\beta + F\alpha^2\beta \right)^2\\
+&= \Biggl[ \frac{2AE-DF}{\sqrt{4AC-D^2}} \left( \arctan\frac{2A+D}{\sqrt{4AC-D^2}} - \arctan\frac{D}{\sqrt{4AC-D^2}} \right)\\
+&  \qquad + \frac{2BD-2AE+(D-E)F}{\sqrt{4AC+4BC-D^2-2DE-E^2+4CF}} \biggl( \arctan\frac{2A+D+E+2(B+F)}{\sqrt{4AC+4BC-D^2-2DE-E^2+4CF}}\\
+&  \qquad \qquad - \arctan\frac{D+E}{\sqrt{4AC+4BC-D^2-2DE-E^2+4CF}} \biggr)\\
+&  \qquad + \frac{-4AB-2BD+F(E+F)}{\sqrt{4B(A+C+D)-(E+F)^2}} \biggl( \arctan\frac{2B+E+F}{\sqrt{4B(A+C+D)-(E+F)^2}}\\
+&  \qquad \qquad - \arctan\frac{E+F}{\sqrt{4B(A+C+D)-(E+F)^2}} \biggr)\Biggr] / \\
+&  \qquad \left( BD^2 + A(-4BC+E^2) + F(-DE+CF) \right)\\
+&= \left[ \sum_{i=1}^3 \frac{A_i}{\sqrt{B_i}} \left( \arctan\frac{C_i}{\sqrt{B_i}} - \arctan\frac{D_i}{\sqrt{B_i}} \right) \right] / I_\text{denominator}\\
+\end{aligned}
+\end{equation}
+
+where
+\begin{equation}
+\begin{aligned}
+&\left\{
+\begin{aligned}
+A_1 &= 2AE-DF &&= 4 (\bm{r}_{01}\times\bm{r}_{12}) \cdot (\bm{r}_{01}\times\bm{r}_{p0})\\
+A_2 &= 2BD-2AE+(D-E)F &&= 4 (\bm{r}_{01}\times\bm{r}_{12}) \cdot (\bm{r}_{p0}\times\bm{r}_{02})\\
+A_3 &= -4AB-2BD+F(E+F) &&= 4 (\bm{r}_{01}\times\bm{r}_{12}) \cdot (\bm{r}_{12}\times\bm{r}_{p1})\\
+\end{aligned}
+\right.\\
+&\left\{
+\begin{aligned}
+B_1 &= 4AC-D^2 &&= 4 \|\bm{r}_{01}\times\bm{r}_{p0}\|^2\\
+B_2 &= 4AC-D^2+4BC-E^2+4CF-2DE &&= 4 \|\bm{r}_{p0}\times\bm{r}_{02}\|^2\\
+B_3 &= 4BA-F^2+4BC-E^2+4BD-2EF &&= 4 \|\bm{r}_{12}\times\bm{r}_{p1}\|^2
+\end{aligned}
+\right.\\
+&\left\{
+\begin{aligned}
+C_1 &= 2A+D &&= 2\bm{r}_{01}\cdot\bm{r}_{p1}\\
+C_2 &= 2A+D+E+2(B+F) &&= 2\bm{r}_{02}\cdot\bm{r}_{p2}\\
+C_3 &= 2B+E+F &&= 2\bm{r}_{12}\cdot\bm{r}_{p2}\\
+\end{aligned}
+\right.\\
+&\left\{
+\begin{aligned}
+D_1 &= D &&= 2\bm{r}_{01}\cdot\bm{r}_{p0}\\
+D_2 &= D+E &&= 2\bm{r}_{02}\cdot\bm{r}_{p0}\\
+D_3 &= E+F &&= 2\bm{r}_{12}\cdot\bm{r}_{p1}
+\end{aligned}
+\right.\\
+&I_\text{denominator} = BD^2 + A(-4BC+E^2) + F(-DE+CF) = -4 \left( (\bm{r}_{01}\times\bm{r}_{12}) \cdot \bm{r}_{p0} \right)^2\\
+\end{aligned}
+\end{equation}
+
+The force \( F = -\nabla V \) can be obtained by doing step-by-step differentiation of the expression above on each of the vertex at \(\bm{x}_0\), \(\bm{x}_1\), \(\bm{x}_2\), as well as the bead of filament tip at \(\bm{x}_p\).
+
+The implementation uses exactly this method, and follows similar notation. Some more temporary variables might be used to simplify expression. Except that \(\|\bm{r}_{01}\times\bm{r}_{12}\|\) in equation (\ref{eq:TriangleBeadVolumeExclusionIntegralExpanded}) is obtained using the calculated area of the triangle, in that
+\begin{equation}
+\|\bm{r}_{01}\times\bm{r}_{12}\| = 2 \text{Area}(f)
+\end{equation}
+
+\end{document}

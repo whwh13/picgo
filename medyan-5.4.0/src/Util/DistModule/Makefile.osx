@@ -1,0 +1,30 @@
+# https://stackoverflow.com/questions/2481269/how-to-make-a-simple-c-makefile
+
+CC=gcc-8
+CXX=g++-8
+RM=rm -f
+CPPFLAGS= -I../include -std=c++14 -march=native -O3 -ffast-math # -DNPROCS=4 # -I/usr/local/include/
+LDFLAGS= 
+LDLIBS=
+
+SRCS=dist_bench.cpp  dist_example.cpp  dist_main.cpp  dist_mod_vars.cpp  dist_test.cpp dist_avx_par.cpp
+OBJS=$(subst .cpp,.o,$(SRCS))
+
+all: comp_dist
+
+comp_dist: $(OBJS)
+	$(CXX) $(CPPFLAGS) $(LDFLAGS) -o comp_dist $(OBJS) $(LDLIBS) 
+
+depend: .depend
+
+.depend: $(SRCS)
+	$(RM) ./.depend
+	$(CXX) $(CPPFLAGS) -MM $^>>./.depend;
+
+clean:
+	$(RM) $(OBJS)
+
+distclean: clean
+	$(RM) *~ .depend
+
+include .depend

@@ -1,0 +1,52 @@
+  	 	\documentclass[11pt, oneside]{article} 
+\usepackage{authblk}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{geometry}  
+\usepackage{graphicx,subfigure}
+\geometry{letterpaper}  
+\title{Calculating binding site position from minus end for partical cylinders given $\alpha$ (binding position from first monomer) \textbf{MEDYANv4.2$\beta$} }
+\author[1, 2]{Aravind Chandrasekaran}
+\affil[1]{Department of Chemistry and Biochemistry, University of Maryland, College Park, MD 20742}
+\affil[2]{National Institute of Neurological Disorders and Stroke, National Institutes of Health, Bethesda, MD 20892 }
+\date{\today}
+% BUT the \maketitle command MUST come AFTER the \begin{document} command! 
+\begin{document}
+
+\maketitle
+
+\section{Overview}
+In MEDYAN, linker/motor and brancher binding sites on a cylinder are stored as binding site fractions referred in this document as $\alpha$. Binding site fraction, stored in \textbf{CBound} object as \textit{$\_$position1} and \textit{$\_$position2} measures the fraction of distance from first monomer of the cylinder in a cylinder of N monomers. 
+\subsection{Full vs Partial Cylinders}
+Full cylinders are N monomers in length. Partial cylinders span monomers $x-y$, where $x>1$ and $y<N$. 
+\subsection{Usage of $\alpha$ in Chemical Objects}
+\textbf{CLinker, CMotorGhost, and CBranchingPoint} classes use $\alpha$ to determine the monomer to which they are bound ($M_{bound} = \alpha\times N \epsilon [1,N]$). Even partial cylinders have an array size of N and so, this parameter can be used directly.
+\subsection{Usage of $\alpha$ in Mechanical Objects}
+\textbf{MLinker, MMotorGhost, and MBranchingPoint} objects currently use $\alpha$ parameter to determine the coordinate of bound molecule along any cylinder. $\alpha$ is defined as shown in Fig.\ref{fig:schematic}A. Currently, MEDYAN codes use this value to determine coordinate of the molecule along the cylinder. This is problematic for partial cylinders as the binding site is assumed to be at $\alpha \times L_{cyl}$ from the $x^{th}$ monomer. To correct for this discrepancy, a method implementation is made in \textbf{Cylinder} class. 
+\newline The function \texttt{adjustedrelativeposition} takes $\alpha$  as the input and determines corrected $\alpha^{corr}$ such that the coordinate specified at $\alpha^{corr} \times L_{cyl}$ distance from first monomer matches with the coordinate specified at $\alpha \times L_{full}$ measured from $x^{th}$ monomer.
+\section{Obtain expression for $\alpha^{corr}$ from $\alpha$}
+Consider the partial cylinder shown in Fig. \ref{fig:schematic}. The corrected parameter $alpha^{corr}$ is obtained as follows.
+\begin{eqnarray}
+\alpha &=& \frac{L_{bind}}{L_{full}}\\
+&=&\frac{L_m + L1}{L_{full}} = \frac{\frac{L_m}{L_{cyl}} + \frac{L1}{L_{cyl}}}{\frac{L_{full}}{L_{cyl}}}\\
+\alpha &=&\frac{\frac{L_m}{L_{cyl}} + \alpha^{corr}}{\frac{L_{full}}{L_{cyl}}}\\
+\alpha^{corr} &=& \frac{\alpha L_{full}}{L_{cyl}} - \frac{L_m}{L_{cyl}}
+\end{eqnarray}
+Similarly, one can also define a definition from $1-\alpha$.
+\begin{eqnarray}
+1-\alpha &=& \frac{L_p + L2}{L_{full}} = \frac{\frac{L_p}{L_{cyl}} + \frac{L2}{L_{cyl}}}{\frac{L_{full}}{L_{cyl}}}\\
+&=& \frac{\frac{L_p}{L_{cyl}} + (1-\alpha^{corr})}{\frac{L_{full}}{L_{cyl}}}\\
+\alpha^{corr} &=& 1-(1-\alpha)\frac{L_{full}}{L_{cyl}} + \frac{L_p}{L_{cyl}}
+\end{eqnarray}
+\subsection{Special cases}
+Consider a \textbf{plus end cylinder} (last cylinder in a multi-cylinder filament, or x$\geq$1, y=N, y-x+1$\leq$ N). Using Eq. (4), we substitute $L_m = 0$, to get,  $\alpha^{corr} = \frac{\alpha L_{full}}{L_{cyl}}$.\newline
+Consider a \textbf{minus end cylinder} (first cylinder in a multi-cylinder filament, or x=1, y$\leq$N, y-x+1$\leq$N). Using Eq. (7), we substitute $L_p = 0$, to get,  $\alpha^{corr} = 1-(1-\alpha)\frac{L_{full}}{L_{cyl}}$.
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{"/media/aravind/New Volume/illustrator/MEDYAN4.2/Paritalcylinder_alpha-01"}
+ \caption{\textbf{Schematic outlining $\alpha$ and $\alpha^{corr}$} \textbf{(A)} shows a full length cylinder along with the definition of $\alpha$}. \textbf{(B)} shows a partial cylinder along with the parameter required by mechanical objects $\alpha^{corr}$. Partial cylinder spans monomers $x-y$, where $x>1$ and $y<N$. In the above schematic, $L_{bind}$ refers to the distance of binding site from the first minus end monomer, $L_{full}$ refers to the maximum allowed length for a cylinder (specified in systeminput file), while $L_{cyl}$ refers to the length of partial cylinder. $L_{m}/L_{p}$ refer to the distance of minus end (plus end) from first ($N^{th}$) monomer. In panel \textbf{B}, $L_{cyl} = L1 + L2$ and $L_{bind} = L_{m} + L1$.
+  \label{fig:schematic}
+\end{figure}
+
+
+\end{document}

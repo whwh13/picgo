@@ -1,0 +1,135 @@
+
+
+\documentclass[11pt, oneside]{article}   	% use "amsart" instead of "article" for AMSLaTeX format
+\usepackage{geometry}                		% See geometry.pdf to learn the layout options. There are lots.
+\geometry{letterpaper}                   		% ... or a4paper or a5paper or ... 
+%\geometry{landscape}                		% Activate for for rotated page geometry
+%\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}				% Use pdf, png, jpg, or eps with pdflatex; use eps in DVI mode
+\usepackage{listings}			         % For showing code			
+								% TeX will automatically convert eps --> pdf in pdflatex		
+\usepackage{amssymb}
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\title{Installation Guide for MEDYAN \textbf{v4.0}}
+\author{Papoian Lab, University of Maryland}
+\date{}							% Activate to display a given date or no date
+
+\begin{document}
+\maketitle
+%\section{}
+%\subsection{}MEDYAN
+
+\tableofcontents
+\newpage
+
+\section{Unpacking MEDYAN}
+ 
+ To unpack the MEDYAN tar file, run the following command in your terminal shell: \newline \newline \indent\texttt{> tar -xvf MEDYAN.tar -C <InstallDirectory>} \newline \newline Once this is complete, all source code and other files will be in the chosen directory.
+ 
+ 
+\section{Setting up the Makefile}
+
+The Makefile for compilation of MEDYAN will be in \texttt{InstallDirectory/MEDYAN}, along with all source code that is needed for compilation.
+
+\subsection {Compilers and libraries needed}
+
+MEDYAN is a C++ program that can be compiled with the following C++11 compilers:
+
+\begin{itemize}
+\item GCC 4.7 and above (Full C++11 support)
+\item  Clang 3.3 and above (Also full C++11 support, default Apple compiler)
+\end{itemize}  
+
+\noindent Compiling with incomplete C++11 compatibility may result in compilation errors. \newline MEDYAN uses the following math and utility libraries:
+
+\begin{itemize}
+\item Boost libraries 1.49 or above
+\item  GSL library
+\item UME\footnote{Valid only if using SIMD based pair-wise distance search protocol on an Intel chip set machine. Please refer to command line compilation macros for more details.} (patched version of UMS::SIMD. Included in the external directory).
+\end{itemize} 
+
+\subsection{Editing the Makefile}
+
+\subsubsection{Compiler and library choices}
+
+The Makefile can be edited to include a compiler or library in a non-default directory by changing the \texttt{CXX}, \texttt{CPPFLAGS}, and \texttt{LDLIBS} variables within the Makefile. To modify the default directory: \\
+
+\begin{itemize}
+\item Change the g++ directory \texttt{CXX = /usr/bin/g++ -std=c++11} to
+ 	    \texttt{CXX = /your g++ directory/g++ -std=c++11} or \texttt{CXX = g++ -std=c++11}.\\
+You may need to load g++ module manually.\\
+\item Change library directory \texttt{LDLIBS = -L/usr/local/lib/ -lboost$\textunderscore$system -lgsl} to 
+		\texttt{LDLIBS =-L/usr/local/lib/ -lboost$\textunderscore$system -L/your boost library directory/lib/} 
+		For some reasons, -lgsl may cause errors when it is by default included and removing this command does not affect installation. \\
+\item Change the third line in \texttt{CPPFLAGS}, which by default contains \texttt{-I/usr/local/include -I/usr/include/boost}, to include 
+		\texttt{-I/<installed boost directory>/include} and \\ \texttt{-I/<installed boost directory>/include/boost}
+
+\end{itemize}		
+		
+\subsubsection{Optimization flags}
+
+The code can be compiled with either \texttt{DEBUG} flags, which specifies the default debugging flags for compatibility with GDB and other debugger tools. For optimal performance, compile with the \texttt{FAST} flag, which gives a number of optimization flags. This can be edited for the system specifications.
+
+\subsection {Command line compilation macros}
+
+The command line macros can be edited in the Makefile to turn on or off certain code capabilities. See the Usage guide for more details on these macros and their implications. \textit{While these macros are customizable, we highly recommend the default usage as previously defined in the original Makefile for full capability}. The macros available for user editing are: \newline
+
+\small
+\begin{table} [!ht]
+\centering
+\begin{tabular}{|L{5cm}|L{9cm}|}  
+\hline
+ \textbf{Macro} & \textbf{Description} \\
+ \hline
+  CHEMISTRY & Enable system chemistry. \\
+  \hline
+  Enable both\\
+  \vtop{\hbox{\strut MECHANICS}\hbox{\strut SERIAL}} & \vtop{\hbox{\strut Enable system mechanics.}\hbox{\strut Serial implementation of conjugate gradient}} \\ 
+  \hline\hline
+  
+    \vtop{\hbox{\strut Pair-wise distance protocols}\hbox{\strut NLORIGINAL}\hbox{\strut  HYBRID\_NLSTENCILLIST}\hbox{\strut SIMDBINDINGSEARCH}} & \vtop{\hbox{\strut Choose one of the macros}\hbox{\strut Optimized protocol similar to MEDYAN3.2}\hbox{\strut \textbf{New} optimized SIMD-free protocol}\hbox{\strut \textbf{New} SIMD based search protocol}} \\ 
+  \hline\hline
+  DYNAMICRATES & Enable dynamic rate changing. This macro can only be specified if both CHEMISTRY and
+  MECHANICS are enabled. \\
+  \hline
+  BOOST\_MEM\_POOL & Enable boost memory pool optimizations. \\
+  \hline
+   BOOL\_POOL\_NSIZE & Set boost memory pool size. Default value is 65536. \\
+  \hline
+   TRACK\_DEPENDENTS & Track reaction dependents in system. \\
+  \hline
+    TRACK\_ZERO\_COPY\_N & For activation of reactions based on copy number. \\
+  \hline
+     TRACK\_UPPER\_COPY\_N & For activation of reactions based on copy number. \\
+  \hline
+     REACTION\_SIGNALING & Enable reaction callback signaling. \\
+  \hline
+     RSPECIES\_SIGNALING & Enable species callback signaling.\\
+  \hline
+  DCHECKFORCES\_INF\_NAN & Checks if forces are NaN or Inf. Exists if forces become unreasonable.\\
+  \hline
+          PLOSFEEDBACK & Uses feedback models described in Plos 2016 paper.\\
+  \hline
+\end{tabular}
+\end{table}
+\normalsize
+
+	
+\subsection {Dependency file}
+
+An optional dependency file can be generated by running the command  \texttt{make Makefile.dep}. This command will automatically be performed when the typical make function is executed.
+
+\subsection{Compilation}
+
+The code can be compiled into an executable file \texttt{MEDYAN} by running \texttt{make} at the command line. \texttt{make clean} will erase all object files as well as the executable in the local directory.
+
+\section {Running the MEDYAN executable}
+
+To run the executable, put the following command into the terminal shell: \newline \newline\indent \texttt{> ./MEDYAN -s <SystemFile> -i <InputDirectory> -o <OutputDirectory>} \newline \newline More details on the system input file and directories can be found in the Usage guide.
+
+
+\end{document}  

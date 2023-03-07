@@ -1,0 +1,37 @@
+# https://stackoverflow.com/questions/2481269/how-to-make-a-simple-c-makefile
+# Test
+CXX=clang++
+NVCC=nvcc
+RM=rm -f
+CPPFLAGS= -I/usr/local/cuda/include/ -I../include -fPIC -std=c++14 -march=native -ffast-math -O3 # -O3 -ffast-math # -g 
+NVCCFLAGS= -I../include -std=c++14 -Xcompiler="-march=native -ffast-math -O3" --use_fast_math -O3 -x cu -arch=sm_30 -dc -Xptxas=-v # -g -G # -O3   # -lineinfo # -expt-extended-lambda #  -ffast-math # --use_fast_math -O3  -ffast-math -O3 # -g -G 
+LDFLAGS= # --relocatable-device-code true
+LDLIBS= -lcudadevrt
+
+SRCS=dist_mod_vars.cpp dist_bench.cpp dist_test.cpp dist_example.cpp dist_main.cpp dist_cuda.cu
+OBJS=dist_coords.o dist_mod_vars.o dist_bench.o dist_test.o dist_example.o dist_main.o dist_cuda.o
+
+all: comp_dist
+
+%.o: %.cpp
+	$(CXX) $(CPPFLAGS) -c $<
+	
+%.o: %.cu
+	$(NVCC) $(NVCCFLAGS) $< -o $@ # -g -G
+
+comp_dist: $(OBJS)
+	$(NVCC) -arch=sm_30 $(LDFLAGS) -o comp_dist $(OBJS) $(LDLIBS) 
+
+depend: .depend
+
+.depend: $(SRCS)
+	$(RM) ./.depend
+	$(CXX) $(CPPFLAGS) -MM $^>>./.depend;
+
+clean:
+	$(RM) $(OBJS)
+
+distclean: clean
+	$(RM) *~ .depend
+
+include .depend
